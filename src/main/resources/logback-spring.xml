@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+
+    <!-- 스프링 기본 로거 설정 -->
+    <springProperty scope="context" name="LOG_PATH" source="logging.file.path" />
+    <springProperty scope="context" name="LOG_FILE" source="logging.file.name" />
+
+    <!-- 콘솔에 출력될 패턴 -->
+    <property name="CONSOLE_PATTERN" value="%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n" />
+    <!-- 파일에 출력될 패턴 -->
+    <property name="FILE_PATTERN" value="%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n" />
+
+    <!-- Appenders 설정 -->
+    <!-- 콘솔 로그 출력 -->
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>${CONSOLE_PATTERN}</pattern>
+        </encoder>
+    </appender>
+
+    <!-- 파일 로그 출력 -->
+    <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_PATH}/${LOG_FILE}.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <!-- 매일 로그 롤링 -->
+            <fileNamePattern>${LOG_PATH}/${LOG_FILE}.%d{yyyy-MM-dd}.log</fileNamePattern>
+            <!-- 보관할 로그 파일 최대 개수 -->
+            <maxHistory>30</maxHistory>
+        </rollingPolicy>
+        <encoder>
+            <pattern>${FILE_PATTERN}</pattern>
+        </encoder>
+    </appender>
+
+    <!-- 로깅 수준 설정 -->
+    <root level="info">
+        <appender-ref ref="CONSOLE" />
+        <appender-ref ref="FILE" />
+    </root>
+
+    <!-- 패키지별 로그 레벨 설정 -->
+    <logger name="org.springframework" level="warn" />
+    <logger name="com.mycompany.myapp" level="debug" />
+
+</configuration>

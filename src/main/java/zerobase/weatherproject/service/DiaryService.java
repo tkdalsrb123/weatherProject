@@ -6,11 +6,14 @@ import lombok.RequiredArgsConstructor;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import zerobase.weatherproject.WeatherProjectApplication;
 import zerobase.weatherproject.domain.DateWeather;
 import zerobase.weatherproject.domain.Diary;
 import zerobase.weatherproject.dto.DiaryDto;
@@ -40,14 +43,19 @@ public class DiaryService {
 
     private final DateWeatherRepository dateWeatherRepository;
 
+    private static final Logger logger = LoggerFactory.getLogger(WeatherProjectApplication.class);
+
     @Transactional
     @Scheduled(cron = "0 0 1 * * *")
     public void saveWeatherDate() {
+        logger.info("Saving weather data");
         dateWeatherRepository.save(getWeatherFromApi());
     }
 
     @Transactional
     public DiaryDto createDiary(LocalDate date, String text) {
+        logger.info("started to create diary");
+
         DateWeather dateWeather = getDateWeather(date);
         Diary diary = diaryRepository.save(Diary.builder()
                         .weather(dateWeather.getWeather())
@@ -57,6 +65,7 @@ public class DiaryService {
                         .date(date)
                         .build());
 
+        logger.info("finished to create diary");
         return DiaryDto.fromEntity(diary);
     }
 
@@ -135,6 +144,7 @@ public class DiaryService {
 
     @Transactional(readOnly = true)
     public List<DiaryDto> readDiary(LocalDate date) {
+        logger.info("read diary");
         List<Diary> diaryList =  diaryRepository.findAllByDate(date);
 
         return diaryList.stream()
@@ -143,6 +153,7 @@ public class DiaryService {
     }
 
     public List<DiaryDto> readDiaries(LocalDate startDate, LocalDate endDate) {
+        logger.info("read diaries");
         List<Diary> diaryList = diaryRepository.findAllByDateBetween(startDate, endDate);
 
         return diaryList.stream()
@@ -151,6 +162,7 @@ public class DiaryService {
     }
 
     public UpdateDiaryDto.Response updateDiary(LocalDate date, String text) {
+        logger.info("update diary");
         Diary nowDiary = diaryRepository.getFirstByDate(date);
         String preText = nowDiary.getText();
         nowDiary.setText(text);
@@ -159,6 +171,7 @@ public class DiaryService {
     }
 
     public void deleteDiary(LocalDate date) {
+        logger.info("delete diary");
         diaryRepository.deleteAllByDate(date);
     }
 }
