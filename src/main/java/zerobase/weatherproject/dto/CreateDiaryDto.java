@@ -2,8 +2,6 @@ package zerobase.weatherproject.dto;
 
 import jakarta.validation.constraints.NotEmpty;
 import lombok.*;
-import org.springframework.stereotype.Service;
-import zerobase.weatherproject.doamain.Diary;
 
 import java.time.LocalDate;
 

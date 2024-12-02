@@ -1,4 +1,4 @@
-package zerobase.weatherproject.doamain;
+package zerobase.weatherproject.domain;
 
 
 import jakarta.persistence.Entity;

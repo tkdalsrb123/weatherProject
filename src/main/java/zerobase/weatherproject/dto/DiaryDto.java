@@ -2,7 +2,7 @@ package zerobase.weatherproject.dto;
 
 
 import lombok.*;
-import zerobase.weatherproject.doamain.Diary;
+import zerobase.weatherproject.domain.Diary;
 
 import java.time.LocalDate;
 

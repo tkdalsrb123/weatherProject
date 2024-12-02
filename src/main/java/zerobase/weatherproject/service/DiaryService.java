@@ -2,23 +2,25 @@ package zerobase.weatherproject.service;
 
 
 import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import zerobase.weatherproject.doamain.Diary;
-import zerobase.weatherproject.dto.CreateDiaryDto;
+import zerobase.weatherproject.domain.DateWeather;
+import zerobase.weatherproject.domain.Diary;
 import zerobase.weatherproject.dto.DiaryDto;
 import zerobase.weatherproject.dto.UpdateDiaryDto;
+import zerobase.weatherproject.repository.DateWeatherRepository;
 import zerobase.weatherproject.repository.DiaryRepository;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.time.LocalDate;
 import java.util.HashMap;
@@ -27,6 +29,8 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
+@Transactional(readOnly = true)
+@RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class DiaryService {
 
     @Value("${openweathermap.key}")
@@ -34,34 +38,52 @@ public class DiaryService {
 
     private final DiaryRepository diaryRepository;
 
-    public DiaryService(DiaryRepository diaryRepository) {
-        this.diaryRepository = diaryRepository;
+    private final DateWeatherRepository dateWeatherRepository;
+
+    @Transactional
+    @Scheduled(cron = "0 0 1 * * *")
+    public void saveWeatherDate() {
+        dateWeatherRepository.save(getWeatherFromApi());
     }
 
     @Transactional
     public DiaryDto createDiary(LocalDate date, String text) {
-//        Diary newDiary = new Diary();
-
-        Map<String, Object> mapWeather = parseWeather(getWeatherAPI());
-//        newDiary.setTemperature((Double) mapWeather.get("temp"));
-//        newDiary.setIcon(mapWeather.get("icon").toString());
-//        newDiary.setWeather(mapWeather.get("main").toString());
-//        newDiary.setText(text);
-//        newDiary.setDate(date);
-
+        DateWeather dateWeather = getDateWeather(date);
         Diary diary = diaryRepository.save(Diary.builder()
-                .weather(mapWeather.get("main").toString())
-                .icon(mapWeather.get("icon").toString())
-                .temperature((Double) mapWeather.get("temp"))
-                .text(text)
-                .date(date)
-                .build());
+                        .weather(dateWeather.getWeather())
+                        .icon(dateWeather.getIcon())
+                        .temperature(dateWeather.getTemperature())
+                        .text(text)
+                        .date(date)
+                        .build());
 
         return DiaryDto.fromEntity(diary);
     }
 
+    private DateWeather getDateWeather(LocalDate date) {
+        List<DateWeather> dateWeatherList = dateWeatherRepository.findAllByDate(date);
 
-    private String getWeatherAPI() {
+        if (dateWeatherList.size() == 0) {
+            return getWeatherFromApi();
+        } else {
+            return dateWeatherList.get(0);
+        }
+
+    }
+
+    private DateWeather getWeatherFromApi() {
+        String weatherData = getWeatherString();
+
+        Map<String, Object> parseWeather = parseWeather(weatherData);
+        DateWeather dateWeather = new DateWeather();
+        dateWeather.setDate(LocalDate.now());
+        dateWeather.setWeather(parseWeather.get("main").toString());
+        dateWeather.setIcon(parseWeather.get("icon").toString());
+        dateWeather.setTemperature((Double) parseWeather.get("temp"));
+        return dateWeather;
+    }
+
+    private String getWeatherString() {
         String apiUrl = "https://api.openweathermap.org/data/2.5/weather?q=seoul&appid=" + API_KEY;
 
         try {
