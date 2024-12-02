@@ -21,7 +21,9 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.time.LocalDate;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 public class DiaryService {
@@ -53,7 +55,7 @@ public class DiaryService {
                 .text(text)
                 .date(date)
                 .build());
-        System.out.println(diary);
+
         return DiaryDto.fromEntity(diary);
     }
 
@@ -86,7 +88,7 @@ public class DiaryService {
         }
     }
 
-    private Map<String, Object> parseWeather(String jsonString) {
+    public Map<String, Object> parseWeather(String jsonString) {
         JSONParser parser = new JSONParser();
         JSONObject jsonObject;
 
@@ -106,6 +108,23 @@ public class DiaryService {
         resultMap.put("icon", weatherObject.get("icon"));
 
         return resultMap;
+    }
+
+    @Transactional(readOnly = true)
+    public List<DiaryDto> readDiary(LocalDate date) {
+        List<Diary> diaryList =  diaryRepository.findAllByDate(date);
+
+        return diaryList.stream()
+                .map(diary -> DiaryDto.fromEntity(diary))
+                .collect(Collectors.toList());
+    }
+
+    public List<DiaryDto> readDiaries(LocalDate startDate, LocalDate endDate) {
+        List<Diary> diaryList = diaryRepository.findAllByDateBetween(startDate, endDate);
+
+        return diaryList.stream()
+                .map(diary -> DiaryDto.fromEntity(diary))
+                .collect(Collectors.toList());
     }
 
 }

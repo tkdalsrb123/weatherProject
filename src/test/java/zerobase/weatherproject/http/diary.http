@@ -1,7 +1,13 @@
 ### create diary
-POST http://localhost:8080/diary/create?date=2024-11-30
+POST http://localhost:8080/create/diary?date=2024-12-02
 Content-Type: application/json
 
 {
-  "text": "What a nice weather?"
+  "text": "first diary on 12-02"
 }
+
+### get diary
+GET http://localhost:8080/read/diary?date=2024-11-30
+
+### get diaries
+GET http://localhost:8080/read/diaries?startDate=2024-11-30&endDate=2024-12-02
