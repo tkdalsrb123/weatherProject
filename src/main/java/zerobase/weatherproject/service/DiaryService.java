@@ -135,4 +135,8 @@ public class DiaryService {
         DiaryDto diary = DiaryDto.fromEntity(diaryRepository.save(nowDiary));
         return UpdateDiaryDto.Response.from(preText, diary);
     }
+
+    public void deleteDiary(LocalDate date) {
+        diaryRepository.deleteAllByDate(date);
+    }
 }

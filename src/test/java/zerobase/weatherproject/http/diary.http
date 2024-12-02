@@ -19,3 +19,6 @@ Content-Type: application/json
 {
   "text": "It is updating text"
 }
+
+### delete diary
+DELETE http://localhost:8080/delete/diary?date=2024-11-30
