@@ -12,6 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 import zerobase.weatherproject.doamain.Diary;
 import zerobase.weatherproject.dto.CreateDiaryDto;
 import zerobase.weatherproject.dto.DiaryDto;
+import zerobase.weatherproject.dto.UpdateDiaryDto;
 import zerobase.weatherproject.repository.DiaryRepository;
 
 import java.io.BufferedReader;
@@ -127,4 +128,11 @@ public class DiaryService {
                 .collect(Collectors.toList());
     }
 
+    public UpdateDiaryDto.Response updateDiary(LocalDate date, String text) {
+        Diary nowDiary = diaryRepository.getFirstByDate(date);
+        String preText = nowDiary.getText();
+        nowDiary.setText(text);
+        DiaryDto diary = DiaryDto.fromEntity(diaryRepository.save(nowDiary));
+        return UpdateDiaryDto.Response.from(preText, diary);
+    }
 }

@@ -11,3 +11,11 @@ GET http://localhost:8080/read/diary?date=2024-11-30
 
 ### get diaries
 GET http://localhost:8080/read/diaries?startDate=2024-11-30&endDate=2024-12-02
+
+### update diary
+PUT http://localhost:8080/update/diary?date=2024-11-30
+Content-Type: application/json
+
+{
+  "text": "It is updating text"
+}
